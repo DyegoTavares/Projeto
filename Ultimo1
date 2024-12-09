@@ -1,0 +1,540 @@
+import streamlit as st
+import datetime
+
+# Configuração inicial do Streamlit
+st.set_page_config(page_title="Sistema de Relatório", page_icon="📊", layout="wide")
+
+st.markdown("""
+    <style>
+    :root {
+        --primary-color: #5A5D9D;
+        --secondary-color: #8C8FA3;
+        --background-color: #F9FAFB;
+        --text-color: #333333;
+        --border-color: #E0E0E0;
+        --selected-color: #3B3F75;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .hero {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 50px;
+        text-align: center;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .hero h1 {
+        font-size: 2em;
+        margin: 0;
+    }
+
+    .hero p {
+        font-size: 1.2em;
+        margin-top: 10px;
+    }
+
+    .hero .btn {
+        margin-top: 20px;
+        background-color: var(--secondary-color);
+        border: none;
+        padding: 10px 20px;
+        font-size: 1em;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+
+    .hero .btn:hover {
+        background-color: var(--selected-color);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <div class="hero">
+        <h1>Analise os dados da Ultrassonografia Cinesiológica de maneira simples e eficiente</h1>
+        <p>Gerencie e analise dados de forma simples e eficiente.</p>
+        <a href="#menu-principal" class="btn">Comece Agora</a>
+    </div>
+""", unsafe_allow_html=True)
+
+# Inicializar informações de estado
+if "dados_diafragma" not in st.session_state:
+    st.session_state.dados_diafragma = {
+        "Espessura Inspiratória (mm)": 0.0,
+        "Espessura Expiratória (mm)": 0.0,
+        "Espessura Inspiratória em CPT (mm)": 0.0,
+        "Espessura Expiratória em CPT (mm)": 0.0,
+        "Mobilidade Diafragmática em VT (mm)": 0.0,
+        "Mobilidade Diafragmática em CPT (mm)": 0.0,
+        "Fração de Espessamento Diafragmático (DTF)": "",
+        "Taxa de Espessamento Diafragmático": "",
+        "Slope Diafragmático": 0.0,
+        "Frequência Respiratória (irpm)": "",
+        "D-IRRS": ""
+    }
+
+if "dados_pulmao" not in st.session_state:
+    st.session_state.dados_pulmao = {
+        "Áreas Pulmonares": [0] * 12,
+        "LUS Score Total": 0,
+        "Avaliação Pleural": "",
+        "Observações": ""
+    }
+
+if "dados_paciente" not in st.session_state:
+    st.session_state.dados_paciente = {
+        "Nome": "",
+        "Data de Nascimento": None,
+        "Sexo": "",
+        "Diagnóstico Médico": "",
+        "Diagnóstico Fisioterapêutico": "",
+        "Mais Informações": ""
+    }
+
+if "dados_musculo_periferico" not in st.session_state:
+    st.session_state.dados_musculo_periferico = {
+        "Ecointensidade": 0.0,
+        "Ângulo de Penação (graus)": 0.0,
+        "Área de Secção Transversa (cm²)": 0.0,
+        "Espessura em Repouso (mm)": 0.0,
+        "Espessura Durante Contração (mm)": 0.0,
+        "Fração de Espessamento Muscular (MTF)": "",
+        "Observações": ""
+    }
+
+# Menu principal e sub-abas
+menu_principal = st.sidebar.radio("Menu Principal",
+                                  ["Página Inicial", "Dados do Paciente", "Análise Ultrassonografia Cinesiológica", "Relatório"])
+sub_aba_ativa = None
+
+if menu_principal == "Análise Ultrassonografia Cinesiológica":
+    # Sub-Abas dentro do menu "Análise Ultrassonografia Cinesiológica"
+    sub_abas = ["Diafragma", "Pleuro-pulmonar", "Músculo periférico",]
+    sub_aba_ativa = st.sidebar.radio("Selecione a região de avaliação", sub_abas)
+
+    # Sub-aba "Diafragma"
+    if sub_aba_ativa == "Diafragma":
+        st.title("Diafragma")
+        # (Lógica já existente para a sub-aba Diafragma)
+
+    # Sub-aba "Pleuro-pulmonar"
+    if sub_aba_ativa == "Pleuro-pulmonar":
+        st.title("Pleuro-pulmonar")
+        # (Lógica já existente para a sub-aba Pleuro-pulmonar)
+
+    # Sub-aba "Músculo Periférico"
+    if sub_aba_ativa == "Músculo periférico":
+        st.write("### Análise do Músculo Periférico")
+
+        # CSS para reduzir o tamanho dos inputs
+        st.markdown("""
+            <style>
+            div[data-testid="stTextInput"] > div, div[data-testid="stNumberInput"] > div {
+                max-width: 150px; /* Define o tamanho máximo para inputs */
+            }
+            </style>
+        """, unsafe_allow_html=True)
+
+        # Inicializar a lista de músculos no estado da sessão
+        if "musculos" not in st.session_state:
+            st.session_state.musculos = [
+                {"Nome do Músculo": "", "Ecointensidade": 0.0, "Ângulo de Penação (graus)": 0.0,
+                 "Área de Secção Transversa (cm²)": 0.0, "Espessura em Repouso (mm)": 0.0,
+                 "Espessura Durante Contração (mm)": 0.0, "Fração de Espessamento Muscular (MTF)": "",
+                 "Observações": ""}]
+
+
+        # Função para adicionar um novo músculo
+        def adicionar_musculo():
+            st.session_state.musculos.append(
+                {"Nome do Músculo": "", "Ecointensidade": 0.0, "Ângulo de Penação (graus)": 0.0,
+                 "Área de Secção Transversa (cm²)": 0.0, "Espessura em Repouso (mm)": 0.0,
+                 "Espessura Durante Contração (mm)": 0.0, "Fração de Espessamento Muscular (MTF)": "",
+                 "Observações": ""})
+
+
+        # Função para remover o último músculo
+        def remover_musculo():
+            if len(st.session_state.musculos) > 1:
+                st.session_state.musculos.pop()
+
+
+        # Botões para adicionar e remover músculos
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.button("Adicionar Músculo", on_click=adicionar_musculo)
+        with col2:
+            st.button("Remover Músculo", on_click=remover_musculo)
+
+        # Renderizar os inputs para cada músculo
+        for i, musculo in enumerate(st.session_state.musculos):
+            st.markdown(f"#### Músculo {i + 1}")
+            musculo["Nome do Músculo"] = st.text_input(
+                f"Nome {i + 1}", value=musculo["Nome do Músculo"], key=f"nome_musculo_{i}"
+            )
+
+            # Alinhar os campos horizontalmente com nomes mais curtos
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
+            with col1:
+                musculo["Ecointensidade"] = st.number_input(
+                    f"Eco. {i + 1}", min_value=0.0, value=musculo["Ecointensidade"],
+                    format="%.1f", step=0.1, key=f"ecointensidade_{i}"  # Adicionado step
+                )
+            with col2:
+                musculo["Ângulo de Penação (graus)"] = st.number_input(
+                    f"Âng. Pen. {i + 1}", min_value=0.0, value=musculo["Ângulo de Penação (graus)"],
+                    format="%.1f", step=0.1, key=f"angulo_penacao_{i}"  # Adicionado step
+                )
+            with col3:
+                musculo["Área de Secção Transversa (cm²)"] = st.number_input(
+                    f"Área {i + 1}", min_value=0.0, value=musculo["Área de Secção Transversa (cm²)"],
+                    format="%.1f", step=0.1, key=f"area_sec_transv_{i}"  # Adicionado step
+                )
+            with col4:
+                musculo["Espessura em Repouso (mm)"] = st.number_input(
+                    f"Esp. Repouso {i + 1}", min_value=0.0, value=musculo["Espessura em Repouso (mm)"],
+                    format="%.1f", step=0.1, key=f"espessura_repouso_{i}"  # Adicionado step
+                )
+            with col5:
+                musculo["Espessura Durante Contração (mm)"] = st.number_input(
+                    f"Esp. Contr. {i + 1}", min_value=0.0,
+                    value=musculo["Espessura Durante Contração (mm)"],
+                    format="%.1f", step=0.1, key=f"espessura_contracao_{i}"  # Adicionado step
+                )
+            with col6:
+                # Cálculo da Fração de Espessamento Muscular (MTF)
+                if (
+                        musculo["Espessura em Repouso (mm)"] > 0
+                        and musculo["Espessura Durante Contração (mm)"] > 0
+                ):
+                    mtf = (
+                                  (
+                                          musculo["Espessura Durante Contração (mm)"]
+                                          - musculo["Espessura em Repouso (mm)"]
+                                  )
+                                  / musculo["Espessura em Repouso (mm)"]
+                          ) * 100
+                    musculo["Fração de Espessamento Muscular (MTF)"] = f"{mtf:.1f}%"
+                else:
+                    musculo["Fração de Espessamento Muscular (MTF)"] = ""
+
+                st.text_input(
+                    f"MTF (%) {i + 1}",
+                    value=musculo["Fração de Espessamento Muscular (MTF)"],
+                    key=f"mtf_{i}",
+                    disabled=True,
+                )
+
+            # Observações
+            musculo["Observações"] = st.text_area(
+                f"Observações {i + 1}", value=musculo["Observações"], key=f"observacoes_{i}"
+            )
+
+            st.markdown("---")
+
+# Aba "Dados do Paciente"
+if menu_principal == "Dados do Paciente":
+    st.title("Dados do Paciente")
+
+    # Nome do Paciente
+    st.session_state.dados_paciente["Nome"] = st.text_input("Nome:", value=st.session_state.dados_paciente["Nome"])
+
+    # Alinhar Data de Nascimento, Sexo e Idade em uma linha com ajuste de proporção
+    col1, col2, col3 = st.columns([2, 2, 1])  # Ajuste proporcional: mais espaço para Sexo e Data de Nascimento
+
+    with col1:
+        # Campo Data de Nascimento
+        data_nascimento = st.text_input("Data de Nascimento:", value="", key="data_nasc")
+        if data_nascimento:
+            try:
+                nascimento = datetime.datetime.strptime(data_nascimento, "%d/%m/%Y").date()
+                if nascimento < datetime.date(1900, 1, 1) or nascimento > datetime.date.today():
+                    st.warning("Por favor, insira uma data entre 01/01/1900 e a data atual.")
+                    nascimento = None
+                else:
+                    st.session_state.dados_paciente["Data de Nascimento"] = nascimento
+            except ValueError:
+                st.warning("Por favor, insira a data no formato correto: dd/mm/aaaa.")
+                nascimento = None
+        else:
+            nascimento = None
+
+    with col2:
+        # Campo Sexo com mais espaço
+        st.session_state.dados_paciente["Sexo"] = st.selectbox(
+            "Sexo:", ["", "Masculino", "Feminino"],
+            index=["", "Masculino", "Feminino"].index(st.session_state.dados_paciente["Sexo"])
+        )
+
+    with col3:
+        # Campo Idade (calculado automaticamente com base na Data de Nascimento)
+        if nascimento:
+            hoje = datetime.date.today()
+            idade = hoje.year - nascimento.year - ((hoje.month, hoje.day) < (nascimento.month, nascimento.day))
+        else:
+            idade = "--"
+        st.text_input("Idade:", value=str(idade))  # Campo normal para manter a tonalidade
+
+    # Diagnóstico Médico
+    st.session_state.dados_paciente["Diagnóstico Médico"] = st.text_area(
+        "Diagnóstico Médico:", value=st.session_state.dados_paciente["Diagnóstico Médico"]
+    )
+
+    # Diagnóstico Fisioterapêutico
+    st.session_state.dados_paciente["Diagnóstico Fisioterapêutico"] = st.text_area(
+        "Diagnóstico Fisioterapêutico:", value=st.session_state.dados_paciente["Diagnóstico Fisioterapêutico"]
+    )
+
+    # Mais Informações
+    st.session_state.dados_paciente["Mais Informações"] = st.text_area(
+        "Mais Informações:", value=st.session_state.dados_paciente["Mais Informações"]
+    )
+
+# Sub-aba "Diafragma"
+if sub_aba_ativa == "Diafragma":
+    st.write("### Volume Corrente (VT)")
+
+    # CSS para reduzir o tamanho dos inputs pela metade
+    st.markdown("""
+        <style>
+        div[data-testid="stTextInput"] > div, div[data-testid="stNumberInput"] > div {
+            max-width: 150px; /* Define o tamanho máximo para inputs */
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Alinhamento horizontal dos inputs
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.session_state.dados_diafragma["Espessura Inspiratória (mm)"] = st.number_input(
+            "Espessura Inspiratória (mm)", min_value=0.0, value=st.session_state.dados_diafragma["Espessura Inspiratória (mm)"],
+            format="%.2f", key="espessura_inspiratoria_vt"
+        )
+    with col2:
+        st.session_state.dados_diafragma["Espessura Expiratória (mm)"] = st.number_input(
+            "Espessura Expiratória (mm)", min_value=0.0, value=st.session_state.dados_diafragma["Espessura Expiratória (mm)"],
+            format="%.2f", key="espessura_expiratoria_vt"
+        )
+    with col3:
+        st.session_state.dados_diafragma["Mobilidade Diafragmática em VT (mm)"] = st.number_input(
+            "Mobilidade em VT (mm)", min_value=0.0, value=st.session_state.dados_diafragma["Mobilidade Diafragmática em VT (mm)"],
+            format="%.2f", key="mobilidade_vt"
+        )
+
+    st.write("### Valor da Fração de Espessamento Diafragmático (DTF)")
+    if st.session_state.dados_diafragma["Espessura Expiratória (mm)"] > 0:
+        dtf = ((st.session_state.dados_diafragma["Espessura Inspiratória (mm)"] -
+                st.session_state.dados_diafragma["Espessura Expiratória (mm)"]) /
+               st.session_state.dados_diafragma["Espessura Expiratória (mm)"]) * 100
+        st.session_state.dados_diafragma["Fração de Espessamento Diafragmático (DTF)"] = f"{dtf:.2f}%"
+    else:
+        st.session_state.dados_diafragma["Fração de Espessamento Diafragmático (DTF)"] = ""
+
+    st.text_input(
+        "DTF (%)", value=st.session_state.dados_diafragma["Fração de Espessamento Diafragmático (DTF)"],
+        key="fração_dtf", disabled=not bool(st.session_state.dados_diafragma["Fração de Espessamento Diafragmático (DTF)"])
+    )
+
+    st.write("### Capacidade Pulmonar Total (CPT)")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.session_state.dados_diafragma["Espessura Inspiratória em CPT (mm)"] = st.number_input(
+            "Espessura Inspiratória CPT (mm)", min_value=0.0, value=st.session_state.dados_diafragma["Espessura Inspiratória em CPT (mm)"],
+            format="%.2f", key="espessura_inspiratoria_cpt"
+        )
+    with col2:
+        st.session_state.dados_diafragma["Espessura Expiratória em CPT (mm)"] = st.number_input(
+            "Espessura Expiratória CPT (mm)", min_value=0.0, value=st.session_state.dados_diafragma["Espessura Expiratória em CPT (mm)"],
+            format="%.2f", key="espessura_expiratoria_cpt"
+        )
+    with col3:
+        st.session_state.dados_diafragma["Mobilidade Diafragmática em CPT (mm)"] = st.number_input(
+            "Mobilidade em CPT (mm)", min_value=0.0, value=st.session_state.dados_diafragma["Mobilidade Diafragmática em CPT (mm)"],
+            format="%.2f", key="mobilidade_cpt"
+        )
+
+    st.write("### Taxa de Espessamento Diafragmático")
+    if st.session_state.dados_diafragma["Espessura Expiratória em CPT (mm)"] > 0:
+        taxa = st.session_state.dados_diafragma["Espessura Inspiratória em CPT (mm)"] / \
+               st.session_state.dados_diafragma["Espessura Expiratória em CPT (mm)"]
+        st.session_state.dados_diafragma["Taxa de Espessamento Diafragmático"] = f"{taxa:.2f}"
+    else:
+        st.session_state.dados_diafragma["Taxa de Espessamento Diafragmático"] = ""
+
+    st.text_input(
+        "Taxa Espessamento", value=st.session_state.dados_diafragma["Taxa de Espessamento Diafragmático"],
+        key="taxa_espessamento", disabled=not bool(st.session_state.dados_diafragma["Taxa de Espessamento Diafragmático"])
+    )
+
+    st.write("### Slope Diafragmático")
+    st.session_state.dados_diafragma["Slope Diafragmático"] = st.number_input(
+        "Slope Diafragmático", min_value=0.0, value=st.session_state.dados_diafragma["Slope Diafragmático"],
+        format="%.2f", key="slope_diafragmatico"
+    )
+
+    st.write("### D-IRRS")
+    freq_resp = st.text_input("Freq Resp (irpm)", value="", key="freq_respiratoria")
+    if freq_resp.isdigit():
+        freq_resp = float(freq_resp)
+        st.session_state.dados_diafragma["Frequência Respiratória (irpm)"] = freq_resp
+    else:
+        freq_resp = None
+        st.session_state.dados_diafragma["Frequência Respiratória (irpm)"] = ""
+
+    if freq_resp and st.session_state.dados_diafragma["Mobilidade Diafragmática em VT (mm)"] > 0:
+        d_irrs = freq_resp / st.session_state.dados_diafragma["Mobilidade Diafragmática em VT (mm)"]
+        st.session_state.dados_diafragma["D-IRRS"] = f"{d_irrs:.2f} irpm/mm"
+    else:
+        st.session_state.dados_diafragma["D-IRRS"] = ""
+
+    st.text_input(
+        "Resultado D-IRRS", value=st.session_state.dados_diafragma["D-IRRS"],
+        key="resultado_dirrs", disabled=not bool(st.session_state.dados_diafragma["D-IRRS"])
+    )
+
+
+# Sub-aba "Pleuro-pulmonar"
+if sub_aba_ativa == "Pleuro-pulmonar":
+    # Adicionar CSS para reduzir o tamanho do campo de LUS Score Total
+    st.markdown(
+        """
+        <style>
+        .lus-score-total {
+            font-size: 16px !important;
+            width: 150px !important;
+            text-align: center !important;
+            display: inline-block;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write("Insira os valores das áreas para calcular o LUS Score (0 a 3 para cada área):")
+
+    # Áreas do Hemitórax Direito (1 a 6) em uma linha horizontal
+    st.write("### Áreas do Hemitórax Direito (1 a 6)")
+    cols_hd = st.columns(6)  # Criar 6 colunas para alinhamento horizontal
+    for i in range(6):
+        with cols_hd[i]:
+            st.session_state.dados_pulmao["Áreas Pulmonares"][i] = st.number_input(
+                f"Área {i + 1} (HD)", min_value=0, max_value=3, step=1,
+                value=st.session_state.dados_pulmao["Áreas Pulmonares"][i],
+                key=f"pulmao_hd_{i}"
+            )
+
+    # Áreas do Hemitórax Esquerdo (1 a 6) em uma linha horizontal
+    st.write("### Áreas do Hemitórax Esquerdo (1 a 6)")
+    cols_he = st.columns(6)  # Criar 6 colunas para alinhamento horizontal
+    for i in range(6, 12):
+        with cols_he[i - 6]:
+            st.session_state.dados_pulmao["Áreas Pulmonares"][i] = st.number_input(
+                f"Área {i - 5} (HE)", min_value=0, max_value=3, step=1,
+                value=st.session_state.dados_pulmao["Áreas Pulmonares"][i],
+                key=f"pulmao_he_{i}"
+            )
+
+    # Cálculo do LUS Score Total
+    st.session_state.dados_pulmao["LUS Score Total"] = sum(st.session_state.dados_pulmao["Áreas Pulmonares"])
+    st.write("### LUS Score Total")
+    st.markdown(
+        f"<div class='lus-score-total'>{st.session_state.dados_pulmao['LUS Score Total']}</div>",
+        unsafe_allow_html=True
+    )
+
+    # Avaliação Pleural
+    st.write("### Avaliação Pleural")
+    st.session_state.dados_pulmao["Avaliação Pleural"] = st.selectbox(
+        "Selecione o tipo de avaliação:",
+        ["", "Com deslizamento", "Sem deslizamento", "Com perda de continuidade"],
+        index=["", "Com deslizamento", "Sem deslizamento", "Com perda de continuidade"].index(st.session_state.dados_pulmao["Avaliação Pleural"])
+    )
+
+    # Observações
+    st.session_state.dados_pulmao["Observações"] = st.text_area(
+        "Observações:", value=st.session_state.dados_pulmao["Observações"]
+    )
+
+
+# Aba "Relatório"
+if menu_principal == "Relatório":
+    st.title("Relatório")
+
+    # Cabeçalho: Dados do Paciente em duas colunas
+    st.write("### Informações do Paciente")
+    col1, col2 = st.columns(2)  # Configuração de duas colunas iguais
+
+    with col1:
+        # Mostrar dados principais do paciente (nome, data de nascimento, sexo)
+        if any(v not in [0, "", None] for v in st.session_state.dados_paciente.values()):
+            if st.session_state.dados_paciente["Nome"]:
+                st.write(f"**Nome:** {st.session_state.dados_paciente['Nome']}")
+            if st.session_state.dados_paciente["Data de Nascimento"]:
+                st.write(f"**Data de Nascimento:** {st.session_state.dados_paciente['Data de Nascimento']}")
+            if st.session_state.dados_paciente["Sexo"]:
+                st.write(f"**Sexo:** {st.session_state.dados_paciente['Sexo']}")
+
+    with col2:
+        # Mostrar informações adicionais (diagnósticos e mais informações)
+        if st.session_state.dados_paciente["Diagnóstico Médico"]:
+            st.write(f"**Diagnóstico Médico:** {st.session_state.dados_paciente['Diagnóstico Médico']}")
+        if st.session_state.dados_paciente["Diagnóstico Fisioterapêutico"]:
+            st.write(f"**Diagnóstico Fisioterapêutico:** {st.session_state.dados_paciente['Diagnóstico Fisioterapêutico']}")
+        if st.session_state.dados_paciente["Mais Informações"]:
+            st.write(f"**Mais Informações:** {st.session_state.dados_paciente['Mais Informações']}")
+
+    st.markdown("---")  # Linha divisória para separar cabeçalho do restante do relatório
+
+    # Avaliação Diafragmática
+    if any(v not in [0, "", None] for v in st.session_state.dados_diafragma.values()):
+        st.subheader("Avaliação Diafragmática")
+        for k, v in st.session_state.dados_diafragma.items():
+            if v not in [0, "", None]:
+                st.write(f"- **{k}:** {v}")
+
+    # Avaliação Pleuro-pulmonar
+    campos_preenchidos_pulmao = (
+        any(area != 0 for area in st.session_state.dados_pulmao["Áreas Pulmonares"]) or
+        st.session_state.dados_pulmao["LUS Score Total"] != 0 or
+        st.session_state.dados_pulmao["Avaliação Pleural"] not in ["", None] or
+        st.session_state.dados_pulmao["Observações"] not in ["", None]
+    )
+    if campos_preenchidos_pulmao:
+        st.subheader("Avaliação Pleuro-pulmonar")
+        for k, v in st.session_state.dados_pulmao.items():
+            if isinstance(v, list):  # Caso de listas como "Áreas Pulmonares"
+                if any(v):  # Verifica se ao menos um valor da lista não é zero
+                    st.write(f"- **{k}:** {v}")
+            elif v not in [0, "", None]:
+                st.write(f"- **{k}:** {v}")
+
+    # Avaliação Músculo Periférico
+    # Resultados do Músculo Periférico
+    st.subheader("Resultados do Músculo Periférico")
+
+    # Verificar se há dados preenchidos
+    if len(st.session_state.musculos) > 0:
+        for i, musculo in enumerate(st.session_state.musculos):
+            st.markdown(f"**Músculo {i + 1}:**")
+            for key, value in musculo.items():
+                if key != "Observações" and value not in [0, ""]:
+                    st.write(f"- **{key}:** {value}")
+            if musculo["Observações"]:
+                st.write(f"- **Observações:** {musculo['Observações']}")
+    else:
+        st.warning("Nenhum dado preenchido para os músculos.")
