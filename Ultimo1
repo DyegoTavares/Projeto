@@ -22,50 +22,6 @@ st.markdown("""
         margin: 0;
     }
 
-    .hero {
-        background-color: var(--primary-color);
-        color: white;
-        padding: 50px;
-        text-align: center;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-
-    .hero h1 {
-        font-size: 2em;
-        margin: 0;
-    }
-
-    .hero p {
-        font-size: 1.2em;
-        margin-top: 10px;
-    }
-
-    .hero .btn {
-        margin-top: 20px;
-        background-color: var(--secondary-color);
-        border: none;
-        padding: 10px 20px;
-        font-size: 1em;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        display: inline-block;
-        transition: background-color 0.3s;
-    }
-
-    .hero .btn:hover {
-        background-color: var(--selected-color);
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-    <div class="hero">
-        <h1>Analise os dados da Ultrassonografia Cinesiológica de maneira simples e eficiente</h1>
-        <p>Gerencie e analise dados de forma simples e eficiente.</p>
-        <a href="#menu-principal" class="btn">Comece Agora</a>
-    </div>
 """, unsafe_allow_html=True)
 
 # Inicializar informações de estado
@@ -115,7 +71,7 @@ if "dados_musculo_periferico" not in st.session_state:
 
 # Menu principal e sub-abas
 menu_principal = st.sidebar.radio("Menu Principal",
-                                  ["Página Inicial", "Dados do Paciente", "Análise Ultrassonografia Cinesiológica", "Relatório"])
+                                  ["Dados do Paciente", "Análise Ultrassonografia Cinesiológica", "Relatório"])
 sub_aba_ativa = None
 
 if menu_principal == "Análise Ultrassonografia Cinesiológica":
@@ -188,27 +144,27 @@ if menu_principal == "Análise Ultrassonografia Cinesiológica":
             col1, col2, col3, col4, col5, col6 = st.columns(6)
             with col1:
                 musculo["Ecointensidade"] = st.number_input(
-                    f"Eco. {i + 1}", min_value=0.0, value=musculo["Ecointensidade"],
+                    f"Ecointensidade ou ecogenicidade. {i + 1}", min_value=0.0, value=musculo["Ecointensidade"],
                     format="%.1f", step=0.1, key=f"ecointensidade_{i}"  # Adicionado step
                 )
             with col2:
                 musculo["Ângulo de Penação (graus)"] = st.number_input(
-                    f"Âng. Pen. {i + 1}", min_value=0.0, value=musculo["Ângulo de Penação (graus)"],
+                    f"Âng. de penação (graus). {i + 1}", min_value=0.0, value=musculo["Ângulo de Penação (graus)"],
                     format="%.1f", step=0.1, key=f"angulo_penacao_{i}"  # Adicionado step
                 )
             with col3:
                 musculo["Área de Secção Transversa (cm²)"] = st.number_input(
-                    f"Área {i + 1}", min_value=0.0, value=musculo["Área de Secção Transversa (cm²)"],
+                    f"Área secção trans.(cm²) {i + 1}", min_value=0.0, value=musculo["Área de Secção Transversa (cm²)"],
                     format="%.1f", step=0.1, key=f"area_sec_transv_{i}"  # Adicionado step
                 )
             with col4:
                 musculo["Espessura em Repouso (mm)"] = st.number_input(
-                    f"Esp. Repouso {i + 1}", min_value=0.0, value=musculo["Espessura em Repouso (mm)"],
+                    f"Espessura em Repouso {i + 1}", min_value=0.0, value=musculo["Espessura em Repouso (mm)"],
                     format="%.1f", step=0.1, key=f"espessura_repouso_{i}"  # Adicionado step
                 )
             with col5:
                 musculo["Espessura Durante Contração (mm)"] = st.number_input(
-                    f"Esp. Contr. {i + 1}", min_value=0.0,
+                    f"Espessura na Contração. {i + 1}", min_value=0.0,
                     value=musculo["Espessura Durante Contração (mm)"],
                     format="%.1f", step=0.1, key=f"espessura_contracao_{i}"  # Adicionado step
                 )
@@ -230,7 +186,7 @@ if menu_principal == "Análise Ultrassonografia Cinesiológica":
                     musculo["Fração de Espessamento Muscular (MTF)"] = ""
 
                 st.text_input(
-                    f"MTF (%) {i + 1}",
+                    f"Fração de espes. muscular (%) {i + 1}",
                     value=musculo["Fração de Espessamento Muscular (MTF)"],
                     key=f"mtf_{i}",
                     disabled=True,
@@ -427,14 +383,18 @@ if sub_aba_ativa == "Pleuro-pulmonar":
 
     st.write("Insira os valores das áreas para calcular o LUS Score (0 a 3 para cada área):")
 
+    # Inicializar valores vazios se necessário
+    if "Áreas Pulmonares" not in st.session_state.dados_pulmao:
+        st.session_state.dados_pulmao["Áreas Pulmonares"] = ["" for _ in range(12)]
+
     # Áreas do Hemitórax Direito (1 a 6) em uma linha horizontal
     st.write("### Áreas do Hemitórax Direito (1 a 6)")
     cols_hd = st.columns(6)  # Criar 6 colunas para alinhamento horizontal
     for i in range(6):
         with cols_hd[i]:
-            st.session_state.dados_pulmao["Áreas Pulmonares"][i] = st.number_input(
-                f"Área {i + 1} (HD)", min_value=0, max_value=3, step=1,
-                value=st.session_state.dados_pulmao["Áreas Pulmonares"][i],
+            st.session_state.dados_pulmao["Áreas Pulmonares"][i] = st.selectbox(
+                f"Área {i + 1} (HD)", ["", 0, 1, 2, 3],
+                index=0,  # Sempre inicializa com a primeira opção (vazio)
                 key=f"pulmao_hd_{i}"
             )
 
@@ -443,14 +403,16 @@ if sub_aba_ativa == "Pleuro-pulmonar":
     cols_he = st.columns(6)  # Criar 6 colunas para alinhamento horizontal
     for i in range(6, 12):
         with cols_he[i - 6]:
-            st.session_state.dados_pulmao["Áreas Pulmonares"][i] = st.number_input(
-                f"Área {i - 5} (HE)", min_value=0, max_value=3, step=1,
-                value=st.session_state.dados_pulmao["Áreas Pulmonares"][i],
+            st.session_state.dados_pulmao["Áreas Pulmonares"][i] = st.selectbox(
+                f"Área {i - 5} (HE)", ["", 0, 1, 2, 3],
+                index=0,  # Sempre inicializa com a primeira opção (vazio)
                 key=f"pulmao_he_{i}"
             )
 
     # Cálculo do LUS Score Total
-    st.session_state.dados_pulmao["LUS Score Total"] = sum(st.session_state.dados_pulmao["Áreas Pulmonares"])
+    st.session_state.dados_pulmao["LUS Score Total"] = sum(
+        int(area) if area != "" else 0 for area in st.session_state.dados_pulmao["Áreas Pulmonares"]
+    )
     st.write("### LUS Score Total")
     st.markdown(
         f"<div class='lus-score-total'>{st.session_state.dados_pulmao['LUS Score Total']}</div>",
@@ -462,7 +424,8 @@ if sub_aba_ativa == "Pleuro-pulmonar":
     st.session_state.dados_pulmao["Avaliação Pleural"] = st.selectbox(
         "Selecione o tipo de avaliação:",
         ["", "Com deslizamento", "Sem deslizamento", "Com perda de continuidade"],
-        index=["", "Com deslizamento", "Sem deslizamento", "Com perda de continuidade"].index(st.session_state.dados_pulmao["Avaliação Pleural"])
+        index=0,  # Sempre inicializa com a primeira opção (vazio)
+        key="avaliacao_pleural"
     )
 
     # Observações
@@ -471,17 +434,21 @@ if sub_aba_ativa == "Pleuro-pulmonar":
     )
 
 
+
+
+from fpdf import FPDF
+import streamlit as st
+
 # Aba "Relatório"
 if menu_principal == "Relatório":
     st.title("Relatório")
 
     # Cabeçalho: Dados do Paciente em duas colunas
-    st.write("### Informações do Paciente")
-    col1, col2 = st.columns(2)  # Configuração de duas colunas iguais
+    if any(v not in [0, "", None] for v in st.session_state.dados_paciente.values()):
+        st.write("### Informações do Paciente")
+        col1, col2 = st.columns(2)
 
-    with col1:
-        # Mostrar dados principais do paciente (nome, data de nascimento, sexo)
-        if any(v not in [0, "", None] for v in st.session_state.dados_paciente.values()):
+        with col1:
             if st.session_state.dados_paciente["Nome"]:
                 st.write(f"**Nome:** {st.session_state.dados_paciente['Nome']}")
             if st.session_state.dados_paciente["Data de Nascimento"]:
@@ -489,23 +456,28 @@ if menu_principal == "Relatório":
             if st.session_state.dados_paciente["Sexo"]:
                 st.write(f"**Sexo:** {st.session_state.dados_paciente['Sexo']}")
 
-    with col2:
-        # Mostrar informações adicionais (diagnósticos e mais informações)
-        if st.session_state.dados_paciente["Diagnóstico Médico"]:
-            st.write(f"**Diagnóstico Médico:** {st.session_state.dados_paciente['Diagnóstico Médico']}")
-        if st.session_state.dados_paciente["Diagnóstico Fisioterapêutico"]:
-            st.write(f"**Diagnóstico Fisioterapêutico:** {st.session_state.dados_paciente['Diagnóstico Fisioterapêutico']}")
-        if st.session_state.dados_paciente["Mais Informações"]:
-            st.write(f"**Mais Informações:** {st.session_state.dados_paciente['Mais Informações']}")
+        with col2:
+            if st.session_state.dados_paciente["Diagnóstico Médico"]:
+                st.write(f"**Diagnóstico Médico:** {st.session_state.dados_paciente['Diagnóstico Médico']}")
+            if st.session_state.dados_paciente["Diagnóstico Fisioterapêutico"]:
+                st.write(f"**Diagnóstico Fisioterapêutico:** {st.session_state.dados_paciente['Diagnóstico Fisioterapêutico']}")
+            if st.session_state.dados_paciente["Mais Informações"]:
+                st.write(f"**Mais Informações:** {st.session_state.dados_paciente['Mais Informações']}")
 
-    st.markdown("---")  # Linha divisória para separar cabeçalho do restante do relatório
+        st.markdown("---")
 
     # Avaliação Diafragmática
     if any(v not in [0, "", None] for v in st.session_state.dados_diafragma.values()):
         st.subheader("Avaliação Diafragmática")
-        for k, v in st.session_state.dados_diafragma.items():
+        col1, col2 = st.columns(2)
+        for i, (k, v) in enumerate(st.session_state.dados_diafragma.items()):
             if v not in [0, "", None]:
-                st.write(f"- **{k}:** {v}")
+                if i % 2 == 0:
+                    with col1:
+                        st.write(f"- **{k}:** {v}")
+                else:
+                    with col2:
+                        st.write(f"- **{k}:** {v}")
 
     # Avaliação Pleuro-pulmonar
     campos_preenchidos_pulmao = (
@@ -517,24 +489,90 @@ if menu_principal == "Relatório":
     if campos_preenchidos_pulmao:
         st.subheader("Avaliação Pleuro-pulmonar")
         for k, v in st.session_state.dados_pulmao.items():
-            if isinstance(v, list):  # Caso de listas como "Áreas Pulmonares"
-                if any(v):  # Verifica se ao menos um valor da lista não é zero
+            if isinstance(v, list):
+                if any(v):
                     st.write(f"- **{k}:** {v}")
             elif v not in [0, "", None]:
                 st.write(f"- **{k}:** {v}")
 
     # Avaliação Músculo Periférico
-    # Resultados do Músculo Periférico
-    st.subheader("Resultados do Músculo Periférico")
-
-    # Verificar se há dados preenchidos
-    if len(st.session_state.musculos) > 0:
+    if "musculos" in st.session_state and len(st.session_state.musculos) > 0 and any(
+        any(v not in [0, ""] for v in musculo.values()) for musculo in st.session_state.musculos
+    ):
+        st.subheader("Resultados do Músculo Periférico")
         for i, musculo in enumerate(st.session_state.musculos):
-            st.markdown(f"**Músculo {i + 1}:**")
-            for key, value in musculo.items():
-                if key != "Observações" and value not in [0, ""]:
-                    st.write(f"- **{key}:** {value}")
-            if musculo["Observações"]:
-                st.write(f"- **Observações:** {musculo['Observações']}")
-    else:
-        st.warning("Nenhum dado preenchido para os músculos.")
+            if any(v not in [0, ""] for v in musculo.values()):
+                st.markdown(f"**Músculo {i + 1}:**")
+                for key, value in musculo.items():
+                    if key != "Observações" and value not in [0, ""]:
+                        st.write(f"- **{key}:** {value}")
+                    if musculo["Observações"]:
+                        st.write(f"- **Observações:** {musculo['Observações']}")
+
+
+# Função para criar o PDF
+    def gerar_pdf():
+        pdf = FPDF()
+        pdf.add_page()
+
+        pdf.set_font("Arial", style="B", size=16)
+        pdf.cell(200, 10, txt="Relatório do Paciente", ln=True, align="C")
+        pdf.ln(10)
+
+        pdf.set_font("Arial", style="B", size=14)
+        if any(v not in [0, "", None] for v in st.session_state.dados_paciente.values()):
+            pdf.cell(200, 10, txt="Informações do Paciente:", ln=True, align="L")
+            pdf.set_font("Arial", size=10)
+            for k, v in st.session_state.dados_paciente.items():
+                if v not in [0, "", None]:
+                    pdf.cell(200, 10, txt=f"{k}: {v}", ln=True)
+
+        if any(v not in [0, "", None] for v in st.session_state.dados_diafragma.values()):
+            pdf.ln(5)
+            pdf.set_font("Arial", style="B", size=14)
+            pdf.cell(200, 10, txt="Avaliação Diafragmática:", ln=True, align="L")
+            pdf.set_font("Arial", size=10)
+            for k, v in st.session_state.dados_diafragma.items():
+                if v not in [0, "", None]:
+                    pdf.cell(200, 10, txt=f"{k}: {v}", ln=True)
+
+        if campos_preenchidos_pulmao:
+            pdf.ln(5)
+            pdf.set_font("Arial", style="B", size=14)
+            pdf.cell(200, 10, txt="Avaliação Pleuro-pulmonar:", ln=True, align="L")
+            pdf.set_font("Arial", size=10)
+            for k, v in st.session_state.dados_pulmao.items():
+                if isinstance(v, list):
+                    if any(v):
+                        pdf.cell(200, 10, txt=f"{k}: {v}", ln=True)
+                elif v not in [0, "", None]:
+                    pdf.cell(200, 10, txt=f"{k}: {v}", ln=True)
+
+        if "musculos" in st.session_state and len(st.session_state.musculos) > 0 and any(
+            any(v not in [0, ""] for v in musculo.values()) for musculo in st.session_state.musculos
+        ):
+            pdf.ln(5)
+            pdf.set_font("Arial", style="B", size=14)
+            pdf.cell(200, 10, txt="Avaliação Músculo Periférico:", ln=True, align="L")
+            pdf.set_font("Arial", size=10)
+            for i, musculo in enumerate(st.session_state.musculos):
+                if any(v not in [0, ""] for v in musculo.values()):
+                    pdf.cell(200, 10, txt=f"Músculo {i + 1}:", ln=True)
+                    for key, value in musculo.items():
+                        if key != "Observações" and value not in [0, ""]:
+                            pdf.cell(200, 10, txt=f"{key}: {value}", ln=True)
+                        if musculo["Observações"]:
+                            pdf.cell(200, 10, txt=f"Observações: {musculo['Observações']}", ln=True)
+
+        return pdf.output(dest="S").encode("latin1")
+
+    pdf_data = gerar_pdf()
+    st.download_button(
+        label="Salvar e Baixar PDF",
+        data=pdf_data,
+        file_name="relatorio_paciente.pdf",
+        mime="application/pdf"
+    )
+
+
+
